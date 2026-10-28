@@ -1,0 +1,42 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+ColumnLimit: 80
+AlignArrayOfStructures: Right
+LineEnding: CRLF
+
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+  AlignCompound: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossComments: true
+
+AlignEscapedNewlines: LeftWithLastLine
+
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1
+
+AlignAfterOpenBracket: true
+
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+
+PackArguments:
+  BinPack: OnePerLine
+PackParameters:
+  BinPack: OnePerLine
+
+ReflowComments: Always
+
+SortIncludes:
+  Enabled: true
+  IgnoreCase: true
+  IgnoreExtension: true
+
