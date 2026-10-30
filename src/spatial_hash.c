@@ -27,7 +27,8 @@ GrowableArray_Int newGrowableArray_Int() {
 void pushGrowableArray_Int(GrowableArray_Int *array, int element) {
     if (array->length == array->capacity) {
         array->capacity *= 2;
-        array->elements = (int *)MemRealloc(array->elements, array->capacity * sizeof(int));
+        array->elements =
+            (int *)MemRealloc(array->elements, array->capacity * sizeof(int));
     }
     array->elements[array->length++] = element;
 }
@@ -44,7 +45,7 @@ void swapDeleteGrowableArray_Int(GrowableArray_Int *array, unsigned int index) {
     if (index >= array->length) {
         return;
     }
-    int tmp = array->elements[array->length--];
+    int tmp                = array->elements[array->length--];
     array->elements[index] = tmp;
 }
 
@@ -56,7 +57,9 @@ int getGrowableArray_Int(GrowableArray_Int *array, unsigned int index) {
     return array->elements[index];
 }
 
-void setGrowableArray_Int(GrowableArray_Int *array, unsigned int index, int value) {
+void setGrowableArray_Int(GrowableArray_Int *array,
+                          unsigned int       index,
+                          int                value) {
     if (index >= array->length) {
         return;
     }
@@ -67,26 +70,27 @@ void setGrowableArray_Int(GrowableArray_Int *array, unsigned int index, int valu
 void freeGrowableArray_Int(GrowableArray_Int *array) {
     MemFree(array->elements);
     array->capacity = 0;
-    array->length = 0;
+    array->length   = 0;
 }
 
 typedef struct {
-    unsigned int bucket_count;
-    unsigned int live_buckets;
-    int *sparse;
+    unsigned int       bucket_count;
+    unsigned int       live_buckets;
+    int               *sparse;
     GrowableArray_Int *buckets;
-} SpacialHash;
+} SpatialHash;
 
-SpacialHash newSpacialHash(unsigned int bucket_count) {
+SpatialHash newSpatialHash(unsigned int bucket_count) {
     if (bucket_count <= 1) {
         bucket_count++;
     }
 
-    SpacialHash hash = {
+    SpatialHash hash = {
         .bucket_count = bucket_count,
         .live_buckets = 0,
-        .sparse = (int *)MemAlloc(bucket_count * sizeof(int)),
-        .buckets = (GrowableArray_Int *)MemAlloc(bucket_count * sizeof(GrowableArray_Int)),
+        .sparse       = (int *)MemAlloc(bucket_count * sizeof(int)),
+        .buckets = (GrowableArray_Int *)MemAlloc(bucket_count *
+                                                 sizeof(GrowableArray_Int)),
     };
 
     for (int i = 0; i < hash.bucket_count; i++) {
@@ -96,39 +100,39 @@ SpacialHash newSpacialHash(unsigned int bucket_count) {
     return hash;
 }
 
-void SpacialHash_insert(SpacialHash *hash, unsigned int index, int value) {
+void SpatialHash_insert(SpatialHash *hash, unsigned int index, int value) {
     if (index >= hash->bucket_count) {
         return;
     }
 
     if (hash->sparse[index] == -1) {
         hash->buckets[hash->live_buckets] = newGrowableArray_Int();
-        hash->sparse[index] = hash->live_buckets;
+        hash->sparse[index]               = hash->live_buckets;
         hash->live_buckets++;
     }
 
     pushGrowableArray_Int(&hash->buckets[hash->sparse[index]], value);
 }
 
-void SpacialHash_hashInsert(SpacialHash *hash, Vector3 vec, int value) {
+void SpatialHash_hashInsert(SpatialHash *hash, Vector3 vec, int value) {
     unsigned int index = hashVector3(vec) % hash->bucket_count;
-    SpacialHash_insert(hash, index, value);
+    SpatialHash_insert(hash, index, value);
 }
 
-GrowableArray_Int SpacialHash_get(SpacialHash *hash, unsigned int index) {
+GrowableArray_Int SpatialHash_get(SpatialHash *hash, unsigned int index) {
     if (hash->sparse[index] == -1) {
-        return (GrowableArray_Int){ 0 };
+        return (GrowableArray_Int){0};
     }
 
     return hash->buckets[hash->sparse[index]];
 }
 
-GrowableArray_Int SpacialHash_hashGet(SpacialHash *hash, Vector3 vec) {
+GrowableArray_Int SpatialHash_hashGet(SpatialHash *hash, Vector3 vec) {
     unsigned int index = hashVector3(vec) % hash->bucket_count;
-    return SpacialHash_get(hash, index);
+    return SpatialHash_get(hash, index);
 }
 
-void freeSpacialHash(SpacialHash *hash) {
+void freeSpatialHash(SpatialHash *hash) {
     for (int i = 0; i < hash->bucket_count; i++) {
         freeGrowableArray_Int(&hash->buckets[i]);
     }

@@ -252,7 +252,7 @@ static Mesh GenMeshTerrain(Terrain *terrain) {
 }
 
 typedef struct {
-    Vector3 position;
+    Vector3     position;
     BoundingBox bounding_box;
     int         vertex;
 } ControlPoint;
@@ -265,7 +265,7 @@ typedef struct {
 
 ControlPointArray NewControlPointArray(int capacity) {
     if (capacity < 1) {
-        return (ControlPointArray){ 0 };
+        return (ControlPointArray){0};
     }
 
     return (ControlPointArray){
@@ -277,7 +277,7 @@ ControlPointArray NewControlPointArray(int capacity) {
 
 ControlPoint ControlPointArray_Get(ControlPointArray *array, int index) {
     if (index < 0 || index >= array->length) {
-        return (ControlPoint){ 0 };
+        return (ControlPoint){0};
     }
 
     return array->elements[index];

@@ -7,7 +7,7 @@
 #include "raygui.h"
 
 #include "mesh.c"
-#include "spacial_hash.c"
+#include "spatial_hash.c"
 
 enum editor_mode {
     VIEW,
@@ -69,20 +69,22 @@ int main(int argc, char *argv[]) {
     Model       terrainModel = LoadModelFromMesh(terrainMesh);
     BoundingBox terrainBB    = GetMeshBoundingBox(terrainMesh);
 
-    SpacialHash spacialHash = newSpacialHash(128);
-    ControlPointArray controlPoints = NewControlPointArray(terrain.vertices.length);
+    SpatialHash       spacialHash = newSpatialHash(128);
+    ControlPointArray controlPoints =
+        NewControlPointArray(terrain.vertices.length);
     for (int i = 0; i < terrain.vertices.length; i++) {
-        Vector3 position = terrain.vertices.elements[i].position;
+        Vector3      position     = terrain.vertices.elements[i].position;
         ControlPoint controlPoint = {
             .position = position,
-            .bounding_box = {
-                Vector3Subtract(position, (Vector3){ 0.05, 0.05, 0.05 }),
-                Vector3Add(position, (Vector3){ 0.05, 0.05, 0.05 }),
-            },
+            .bounding_box =
+                {
+                               Vector3Subtract(position, (Vector3){0.05, 0.05, 0.05}),
+                               Vector3Add(position, (Vector3){0.05, 0.05, 0.05}),
+                               },
             .vertex = i,
         };
         ControlPointArray_Push(&controlPoints, controlPoint);
-        SpacialHash_hashInsert(&spacialHash, position, i);
+        SpatialHash_hashInsert(&spacialHash, position, i);
     }
 
     SetTargetFPS(60);
@@ -134,11 +136,15 @@ int main(int argc, char *argv[]) {
             cursorColour = GREEN;
 
             if (mode == TERRAIN) {
-                GrowableArray_Int nearby = SpacialHash_hashGet(&spacialHash, rayCol.point);
+                GrowableArray_Int nearby =
+                    SpatialHash_hashGet(&spacialHash, rayCol.point);
                 RayCollision nearestControl;
                 for (int i = 0; i < nearby.length; i++) {
-                    ControlPoint controlPoint = controlPoints.elements[getGrowableArray_Int(&nearby, i)];
-                    nearestControl = GetRayCollisionBox(ray, controlPoint.bounding_box);
+                    ControlPoint controlPoint =
+                        controlPoints
+                            .elements[getGrowableArray_Int(&nearby, i)];
+                    nearestControl =
+                        GetRayCollisionBox(ray, controlPoint.bounding_box);
                     if (nearestControl.hit) {
                         nearestControlPoint = getGrowableArray_Int(&nearby, i);
                     }
@@ -164,9 +170,12 @@ int main(int argc, char *argv[]) {
             Vertex vertex;
             for (int i = 0; i < terrain.vertices.length; i++) {
                 vertex = VertexArray_Get(&terrain.vertices, i);
-                DrawCube(vertex.position, 0.1f, 0.1f, 0.1f, nearestControlPoint == i ? ORANGE : BLUE);
+                DrawCube(vertex.position,
+                         0.1f,
+                         0.1f,
+                         0.1f,
+                         nearestControlPoint == i ? ORANGE : BLUE);
             }
-
         }
 
         if (rayCol.hit && !IsCursorHidden()) {
@@ -183,7 +192,11 @@ int main(int argc, char *argv[]) {
 
         EndMode3D();
         if (nearestControlPoint != -1) {
-            DrawText(TextFormat("Nearest Point: %i", nearestControlPoint), screenWidth/2, 20, 20, BLACK);
+            DrawText(TextFormat("Nearest Point: %i", nearestControlPoint),
+                     screenWidth / 2,
+                     20,
+                     20,
+                     BLACK);
             nearestControlPoint = -1;
         }
 
@@ -210,7 +223,7 @@ int main(int argc, char *argv[]) {
     }
 
     UnloadModel(terrainModel);
-    freeSpacialHash(&spacialHash);
+    freeSpatialHash(&spacialHash);
 
     CloseWindow();
     return 0;
