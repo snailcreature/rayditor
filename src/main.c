@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
             .vertex = i,
         };
         ControlPointArray_Push(&controlPoints, controlPoint);
-        SpatialHash_hashInsert(&spacialHash, position, i);
+        SpatialHash_insertBB(&spacialHash, controlPoint.bounding_box, i);
     }
 
     SetTargetFPS(60);
@@ -136,13 +136,12 @@ int main(int argc, char *argv[]) {
             cursorColour = GREEN;
 
             if (mode == TERRAIN) {
-                IntBTree* nearby =
+                IntBTree *nearby =
                     SpatialHash_hashGet(&spacialHash, rayCol.point);
                 RayCollision nearestControl;
                 for (int i = 0; i < nearby->nodes.length; i++) {
                     ControlPoint controlPoint =
-                        controlPoints
-                            .elements[nearby->nodes.nodes[i].data];
+                        controlPoints.elements[nearby->nodes.nodes[i].data];
                     nearestControl =
                         GetRayCollisionBox(ray, controlPoint.bounding_box);
                     if (nearestControl.hit) {
