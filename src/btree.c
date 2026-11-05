@@ -28,6 +28,7 @@ static IntBTreeNode NIL_NODE = {
 
 /*
  * Create a new BTreeNode holding `data`, not connected to any other nodes.
+
  */
 IntBTreeNode newIntBTreeNode(int data) {
     return (IntBTreeNode){
@@ -43,7 +44,8 @@ IntBTreeNode newIntBTreeNode(int data) {
 /*
  * Array of BTreeNodes.
  * 
- * Keeps the nodes tightly-packed in memory for efficiency.
+ * Keeps the nodes tightly-packed in memory for
+ * efficiency.
  */
 typedef struct {
     unsigned int  length;
@@ -79,12 +81,14 @@ void freeIntBTreeNodeArray(IntBTreeNodeArray *array) {
 }
 
 /*
- * Push a node onto the back of the array, resizing its allocated memory if needed.
+ * Push a node onto the back of the array, resizing its allocated memory if
+ * needed.
  */
 void pushIntBTreeNodeArray(IntBTreeNodeArray *array, IntBTreeNode node) {
     if (array->length == array->capacity) {
         array->capacity *= 2;
-        array->nodes     = MemRealloc(array->nodes, array->capacity);
+        array->nodes     = (IntBTreeNode *)MemRealloc(
+            array->nodes, sizeof(IntBTreeNode) * array->capacity);
     }
 
     array->nodes[array->length] = node;
@@ -141,10 +145,12 @@ IntBTreeNode *getRefIntBTreeNodeArray(IntBTreeNodeArray *array,
 }
 
 /*
- * Swap the node at `index` with the last node in the array and then drop the
+ * Swap the node at `index` with the last node in the array and then drop
+ * the
  * last element.
  *
- * Automatically re-connects the swapped node to its parent and children.
+ * Automatically re-connects the swapped node to its
+ * parent and children.
  */
 void swapDeleteBTreeNodeArray(IntBTreeNodeArray *array, unsigned int index) {
     if (index >= array->length) {
@@ -225,6 +231,7 @@ void resetIntBTree(IntBTree *btree) {
 /*
  * Find the index of the node in `btree->nodes` holding `value`.
  *
+ *
  * Returns `-1` if no matching node found.
  */
 int findIntBTree(IntBTree *btree, int value) {
@@ -276,7 +283,8 @@ void adjustDepthIntBTree(IntBTree *btree) {
 /*
  * Get the depth of the node holding `value`.
  *
- * Returns `-1` if no node was found.
+ * Returns `-1` if no node
+ * was found.
  */
 int getNodeDepth(IntBTree *btree, int value) {
     int index = findIntBTree(btree, value);
@@ -365,6 +373,7 @@ void rotateRightIntBtree(IntBTree *btree, unsigned int yIndex) {
 
 /*
  * Find the node in branch starting at node `index` with the lowest value.
+
  */
 int minimumIntBTree(IntBTree *btree, unsigned int index) {
     IntBTreeNode *node;
@@ -421,7 +430,8 @@ unsigned int getBranchDepth(IntBTree *btree, int index) {
 }
 
 /*
- * Traverse up the BTree from node `index` to the root, rotating away from the
+ * Traverse up the BTree from node `index` to the root, rotating away from
+ * the
  * deepest branch at each step.
  */
 void rebalanceIntBTree(IntBTree *btree, unsigned int index) {
@@ -447,7 +457,8 @@ void rebalanceIntBTree(IntBTree *btree, unsigned int index) {
 }
 
 /*
- * Insert `data` into the BTree, returning early if it already exists in the set.
+ * Insert `data` into the BTree, returning early if it already exists in the
+ * set.
  */
 void insertIntBTree(IntBTree *btree, int data) {
     if (btree->rootIndex == -1) {
@@ -520,7 +531,8 @@ void removeIntBtree(IntBTree *btree, int value) {
         xIndex = zNode->leftIndex;
         transplantIntBTree(btree, zIndex, xIndex);
     } else if (zNode->parentIndex != -1) {
-        IntBTreeNode *parentNode = getRefIntBTreeNodeArray(&btree->nodes, zNode->parentIndex);
+        IntBTreeNode *parentNode =
+            getRefIntBTreeNodeArray(&btree->nodes, zNode->parentIndex);
         if (zIndex == parentNode->leftIndex) {
             parentNode->leftIndex = -1;
         } else {

@@ -136,17 +136,17 @@ int main(int argc, char *argv[]) {
             cursorColour = GREEN;
 
             if (mode == TERRAIN) {
-                GrowableArray_Int nearby =
+                IntBTree* nearby =
                     SpatialHash_hashGet(&spacialHash, rayCol.point);
                 RayCollision nearestControl;
-                for (int i = 0; i < nearby.length; i++) {
+                for (int i = 0; i < nearby->nodes.length; i++) {
                     ControlPoint controlPoint =
                         controlPoints
-                            .elements[getGrowableArray_Int(&nearby, i)];
+                            .elements[nearby->nodes.nodes[i].data];
                     nearestControl =
                         GetRayCollisionBox(ray, controlPoint.bounding_box);
                     if (nearestControl.hit) {
-                        nearestControlPoint = getGrowableArray_Int(&nearby, i);
+                        nearestControlPoint = nearby->nodes.nodes[i].data;
                     }
                 }
             }

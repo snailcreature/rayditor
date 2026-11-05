@@ -1,11 +1,22 @@
 #include <math.h>
 #include <raylib.h>
+#include <stdio.h>
 #include <sys/types.h>
 
+#include "btree.c"
+
+const float   SPATIAL_HASH_UNIT   = 2.0;
+const Vector3 SPATIAL_HASH_OFFSET = {
+    0.5,
+    0.5,
+    0.5,
+};
+
 int hashVector3(Vector3 vec) {
-    int x = roundf(vec.x);
-    int y = roundf(vec.y);
-    int z = roundf(vec.z);
+    int x = roundf((vec.x / SPATIAL_HASH_UNIT) + SPATIAL_HASH_OFFSET.x);
+    int y = roundf((vec.y / SPATIAL_HASH_UNIT) + SPATIAL_HASH_OFFSET.y);
+    int z = roundf((vec.z / SPATIAL_HASH_UNIT) + SPATIAL_HASH_OFFSET.z);
+
     // 17x + 31y + 127z
     return (x << 4) + x + (y << 5) - y + (z << 7) - z;
 }
@@ -74,10 +85,10 @@ void freeGrowableArray_Int(GrowableArray_Int *array) {
 }
 
 typedef struct {
-    unsigned int       bucket_count;
-    unsigned int       live_buckets;
-    int               *sparse;
-    GrowableArray_Int *buckets;
+    unsigned int bucket_count;
+    unsigned int live_buckets;
+    int         *sparse;
+    IntBTree    *buckets;
 } SpatialHash;
 
 SpatialHash newSpatialHash(unsigned int bucket_count) {
@@ -89,8 +100,7 @@ SpatialHash newSpatialHash(unsigned int bucket_count) {
         .bucket_count = bucket_count,
         .live_buckets = 0,
         .sparse       = (int *)MemAlloc(bucket_count * sizeof(int)),
-        .buckets = (GrowableArray_Int *)MemAlloc(bucket_count *
-                                                 sizeof(GrowableArray_Int)),
+        .buckets      = (IntBTree *)MemAlloc(bucket_count * sizeof(IntBTree)),
     };
 
     for (int i = 0; i < hash.bucket_count; i++) {
@@ -106,12 +116,12 @@ void SpatialHash_insert(SpatialHash *hash, unsigned int index, int value) {
     }
 
     if (hash->sparse[index] == -1) {
-        hash->buckets[hash->live_buckets] = newGrowableArray_Int();
+        hash->buckets[hash->live_buckets] = newIntBTree();
         hash->sparse[index]               = hash->live_buckets;
         hash->live_buckets++;
     }
 
-    pushGrowableArray_Int(&hash->buckets[hash->sparse[index]], value);
+    insertIntBTree(&hash->buckets[hash->sparse[index]], value);
 }
 
 void SpatialHash_hashInsert(SpatialHash *hash, Vector3 vec, int value) {
@@ -119,22 +129,22 @@ void SpatialHash_hashInsert(SpatialHash *hash, Vector3 vec, int value) {
     SpatialHash_insert(hash, index, value);
 }
 
-GrowableArray_Int SpatialHash_get(SpatialHash *hash, unsigned int index) {
+IntBTree *SpatialHash_get(SpatialHash *hash, unsigned int index) {
     if (hash->sparse[index] == -1) {
-        return (GrowableArray_Int){0};
+        return NULL;
     }
 
-    return hash->buckets[hash->sparse[index]];
+    return &hash->buckets[hash->sparse[index]];
 }
 
-GrowableArray_Int SpatialHash_hashGet(SpatialHash *hash, Vector3 vec) {
+IntBTree *SpatialHash_hashGet(SpatialHash *hash, Vector3 vec) {
     unsigned int index = hashVector3(vec) % hash->bucket_count;
     return SpatialHash_get(hash, index);
 }
 
 void freeSpatialHash(SpatialHash *hash) {
     for (int i = 0; i < hash->bucket_count; i++) {
-        freeGrowableArray_Int(&hash->buckets[i]);
+        freeIntBTree(&hash->buckets[i]);
     }
 
     MemFree(hash->buckets);
